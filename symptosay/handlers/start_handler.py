@@ -2,11 +2,11 @@ import logging
 from http import HTTPStatus
 
 import httpx
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 from dotenv import find_dotenv, load_dotenv
-from keyboards.start_keyboard import get_start_keyboard
+from keyboards.main_keyboard import get_main_kb
 
 logger = logging.getLogger(__name__)
 
@@ -19,29 +19,31 @@ USER_SERVICE_URL = "http://user_service:8000"
 
 @start_router.message(Command("start"))
 async def send_welcome(message: Message) -> None:
-    logger.info("Пользователь %s запустил бота.", message.from_user.username)
-    await message.reply(
-        "Привет! Нажми кнопку 'Старт', чтобы зарегистрироваться.",
-        reply_markup=get_start_keyboard(),
-    )
+    # TODO: process None
+    logger.info("Пользователь %s запустил бота", message.from_user.username)
 
-
-@start_router.message(F.text == "Старт")
-async def process_start_button(message: Message) -> None:
+    # TODO: process None
     user_id = message.from_user.id
     username = message.from_user.username
     user_data = {"user_id": user_id, "username": username}
 
-    logger.info("Пользователь %s нажал кнопку 'Старт'.", user_id)
-
     try:
-        async with httpx.AsyncClient() as client:
-            logger.info("Отправка запроса к %s/auth для пользователя %s.", USER_SERVICE_URL, user_id)
-            response = await client.post(f"{USER_SERVICE_URL}/auth", json=user_data)
+        async with httpx.AsyncClient() as session:
+            # TODO: change endpoint
+            logger.info("Отправка запроса к %s/auth для пользователя %s", USER_SERVICE_URL, user_id)
+            response = await session.post(f"{USER_SERVICE_URL}/auth", json=user_data)
 
-            if response.status_code == HTTPStatus.OK:
-                logger.info("Пользователь %s успешно зарегистрирован.", user_id)
-                await message.reply("Вы успешно зарегистрированы!")
+            is_admin = response.json().get("is_admin")
+
+            if response.status_code == HTTPStatus.CREATED:
+                logger.info("Пользователь %s успешно зарегистрирован", user_id)
+                await message.reply(
+                    "Привет! Это бот по отслеживанию симптомов. Если тебе нужна помощь по боту, нажми кнопку 'Помощь'",
+                    reply_markup=get_main_kb(is_admin),
+                )
+            elif response.status_code == HTTPStatus.OK:
+                logger.info("Пользователь %s уже зарегестрирован. Сброс клавиатуры", user_id)
+                await message.reply("Перезапущен.", reply_markup=get_main_kb(is_admin))
             else:
                 logger.error(
                     "Ошибка при регистрации пользователя %s. Статус код: %s, Ответ: %s",
