@@ -5,6 +5,8 @@ import os
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import find_dotenv, load_dotenv
+from handlers.admin_handler import admin_router
+from handlers.main_handler import main_router
 from handlers.start_handler import start_router
 
 logging.basicConfig(
@@ -30,6 +32,8 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 dp.include_routers(start_router)
+dp.include_routers(main_router)
+dp.include_routers(admin_router)
 
 
 async def main() -> None:
