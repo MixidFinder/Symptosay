@@ -1,11 +1,9 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, DateTime
 
-# База для таблиц, связывающих пользователей и их симптомы (без реального ForeignKey):
 UserSymptomsBase = declarative_base()
 
 class UserSymptom(UserSymptomsBase):
-
     __tablename__ = "user_symptoms"
 
     id = Column(Integer, primary_key=True)
@@ -13,5 +11,8 @@ class UserSymptom(UserSymptomsBase):
     symptom_id = Column(Integer, nullable=False)
     timestamp = Column(DateTime)
 
-    def __repr__(self):
-        return f"<UserSymptom(id={self.id}, user_id={self.user_id}, symptom_id={self.symptom_id})>"
+    def __repr__(self) -> str:
+        return (
+            f"<UserSymptom(id={self.id}, user_id={self.user_id}, "
+            f"symptom_id={self.symptom_id})>"
+        )

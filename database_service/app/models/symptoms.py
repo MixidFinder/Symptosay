@@ -1,7 +1,6 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, Text
 
-# База для таблиц, связанных с симптомами:
 SymptomsBase = declarative_base()
 
 class Symptom(SymptomsBase):
@@ -11,5 +10,5 @@ class Symptom(SymptomsBase):
     name = Column(String(200), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Symptom(id={self.id}, name={self.name})>"
