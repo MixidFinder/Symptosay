@@ -1,9 +1,9 @@
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
 from api.user import router as user_router
 from db import init_db
-
-import logging
+from fastapi import FastAPI
 
 logging.basicConfig(
     level=logging.INFO,
