@@ -1,11 +1,12 @@
-from typing import List, Optional
+from __future__ import annotations
+
 from pydantic import BaseModel
 
 
 class UserRegister(BaseModel):
     user_id: int
     username: str
-    is_admin: Optional[bool] = False
+    is_admin: bool | None
 
     class Config:
         from_attributes = True
@@ -21,7 +22,7 @@ class UserResponse(BaseModel):
 
 
 class UserListResponse(BaseModel):
-    users: List[UserResponse]
+    users: list[UserResponse]
 
     class Config:
         from_attributes = True

@@ -8,5 +8,5 @@ logger = logging.getLogger(__name__)
 load_dotenv(find_dotenv())
 
 
-def get_admins() -> list:
+def get_admins() -> list[int]:
     return list(map(int, os.getenv("ADMINS", "").split(",")))

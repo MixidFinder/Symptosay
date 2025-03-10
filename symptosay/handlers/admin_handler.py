@@ -15,10 +15,6 @@ admin_router = Router()
 admin_router.message.filter(IsAdminFilter())
 
 
-DATABASE_SERVICE_URL = "http://database_service:8001"
-USER_SERVICE_URL = "http://user_service:8000"
-
-
 @admin_router.message(F.text.lower() == "админ панель")
 async def open_admin_panel(message: Message) -> None:
     logger.info("User %s opened admin panel", message.from_user.id)
@@ -27,4 +23,4 @@ async def open_admin_panel(message: Message) -> None:
 
 @admin_router.message(F.text.lower() == "назад")
 async def open_main_menu(message: Message) -> None:
-    await message.reply("Главное меню", reply_markup=get_main_kb())
+    await message.reply("Главное меню", reply_markup=await get_main_kb(message.from_user.id))

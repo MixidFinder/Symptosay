@@ -26,6 +26,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             logger.info("Session success")
     except Exception as e:
         logger.error(f"Error session: {e}")
+        raise
 
 
 async def init_db():
