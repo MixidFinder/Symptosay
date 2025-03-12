@@ -13,3 +13,9 @@ async def get_main_kb(user_id: int) -> ReplyKeyboardMarkup:
         keyboard.row(KeyboardButton(text="Админ панель"))
 
     return keyboard.as_markup(resize_keyboard=True)
+
+
+async def get_back_btn() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    builder.button(text="Отмена")
+    return builder.as_markup(resize_keyboard=True)

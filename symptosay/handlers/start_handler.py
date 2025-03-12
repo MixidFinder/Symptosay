@@ -29,7 +29,10 @@ async def send_welcome(message: Message) -> None:
     user_data = await user_service.get_user_by_id(user_id)
 
     if user_data:
-        await message.reply("Перезапущен", reply_markup=await get_main_kb(new_user["user_id"]))
+        await message.reply(
+            "Перезапущен",
+            reply_markup=await get_main_kb(new_user["user_id"]),
+        )
     else:
         response = await user_service.register_user(new_user)
         if response:

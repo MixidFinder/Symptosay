@@ -2,16 +2,17 @@ import logging
 
 from aiogram import F, Router
 from aiogram.types import Message
-from dotenv import find_dotenv, load_dotenv
 from filters.admin_filter import IsAdminFilter
 from keyboards.admin_kb import get_admin_keyboard
 from keyboards.main_kb import get_main_kb
 
+from . import symptom_adm, user_adm
+
 logger = logging.getLogger(__name__)
 
-load_dotenv(find_dotenv())
-
 admin_router = Router()
+admin_router.include_router(symptom_adm.symptom_router)
+admin_router.include_router(user_adm.user_adm_router)
 admin_router.message.filter(IsAdminFilter())
 
 

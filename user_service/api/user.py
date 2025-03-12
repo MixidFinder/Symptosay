@@ -5,7 +5,7 @@ from db import get_db
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from models.user_model import User
-from schemas.user_schema import UserRegister, UserResponse
+from schemas.user_schema import UserRegister, UserResponse, UserToggleAdmin
 from services.user_service import get_admins
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,3 +45,20 @@ async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> list[U
     result = await db.execute(select(User))
     users = result.scalars().all()
     return users
+
+
+@router.patch("/api/users/{user_id}/toggle-admin", response_model=UserResponse)
+async def toggle_admin(
+    user_id: int, data: UserToggleAdmin, db: Annotated[AsyncSession, Depends(get_db)]
+) -> UserResponse:
+    logger.info("Promoting to admin user %s", user_id)
+    user = await db.get(User, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.is_admin = data.is_admin
+    await db.commit()
+    await db.refresh(user)
+
+    return user
