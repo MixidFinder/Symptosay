@@ -1,21 +1,37 @@
+version: "3.9"
+
 services:
-  symptosay:
-    build: ./symptosay
-    container_name: symptosay
-    env_file: ./symptosay/.env
-    depends_on:
-      - user_service
+  db:
+    image: postgres:17
+    container_name: db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - app_network
 
-  user_service:
-    build: ./user_service
-    container_name: user_service
+  database_service:
+    build:
+      context: ./database_service
+      dockerfile: Dockerfile
+    container_name: database_service
+    env_file:
+      - .env
+    depends_on:
+      - db
     ports:
-      - "8000:8000"
+      - "8001:8001"
     networks:
       - app_network
 
 networks:
   app_network:
     driver: bridge
+
+volumes:
+  dbdata:
