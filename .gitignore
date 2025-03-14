@@ -196,3 +196,4 @@ pyrightconfig.json
 #
 # DB
 *.db
+.DS_Store
