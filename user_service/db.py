@@ -1,4 +1,6 @@
 import logging
+import os
+from dotenv import load_dotenv, find_dotenv
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,7 +9,9 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-DATABASE_URL = "sqlite+aiosqlite:///./users.db"
+load_dotenv(find_dotenv())
+
+DATABASE_URL = f"postgresql+asyncpg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWD')}@user_service_db/users"
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 

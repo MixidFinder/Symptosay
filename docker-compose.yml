@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  db:
+  database_service_db:
     image: postgres:17
     container_name: db
     environment:
@@ -12,6 +12,15 @@ services:
       - dbdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app_network
+
+  symptosay:
+    build: ./symptosay
+    container_name: symptosay
+    env_file: ./.env
+    depends_on:
+      - user_service
     networks:
       - app_network
 
@@ -26,6 +35,26 @@ services:
       - db
     ports:
       - "8001:8001"
+    networks:
+      - app_network
+    depends_on:
+      user_service_db:
+        condition: service_healthy
+    env_file:
+      - ./.env
+
+  user_service_db:
+    image: postgres:17-alpine3.20
+    container_name: user_service_db
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d users"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - app_network
 

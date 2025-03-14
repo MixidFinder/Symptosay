@@ -1,16 +1,24 @@
 import logging
+import os
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from models.user_model import User
 from schemas.user_schema import UserRegister
+from dotenv import load_dotenv, find_dotenv
 
 logger = logging.getLogger(__name__)
 
+load_dotenv(find_dotenv())
+
 
 async def register_user(db: AsyncSession, user: UserRegister):
-    new_user = User(user_id=user.user_id, username=user.username, is_admin=False)
-    logger.info(f"Get new_user {new_user.user_id}, {new_user.username}")
+    is_admin = user.user_id in get_admins()
+    new_user = User(user_id=user.user_id, username=user.username, is_admin=is_admin)
+    logger.info(
+        f"Get new_user {new_user.user_id}, {new_user.username}, {new_user.is_admin}"
+    )
+
     try:
         db.add(new_user)
         await db.commit()
@@ -51,3 +59,7 @@ async def get_user_by_id(db: AsyncSession, user_id: int):
         raise
 
     return user
+
+
+def get_admins():
+    return list(map(int, os.getenv("ADMINS", "").split(",")))
