@@ -27,6 +27,7 @@ async def send_welcome(message: Message) -> None:
         new_user["is_admin"] = True
 
     user_data = await user_service.get_user_by_id(user_id)
+    logger.info("Get user data: %s", user_data)
 
     if user_data:
         await message.reply(
