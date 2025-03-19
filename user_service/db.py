@@ -12,7 +12,11 @@ Base = declarative_base()
 
 load_dotenv(find_dotenv())
 
-DATABASE_URL = f"postgresql+asyncpg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWD')}@user_service_db/users"
+DATABASE_URL = os.getenv("USER_SERVICE_DB")
+
+if not DATABASE_URL:
+    msg = "Missing database URL"
+    raise ValueError(msg)
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
@@ -24,8 +28,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         async with async_session() as session:
             yield session
             logger.info("Session success")
-    except Exception as e:
-        logger.error(f"Error session: {e}")
+    except Exception:
+        logger.exception("Session error")
         raise
 
 
@@ -34,5 +38,5 @@ async def init_db():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             logger.info("DB tables created successfully")
-    except Exception as e:
-        logger.error(f"Error creating db tables: {e}")
+    except Exception:
+        logger.exception("Error creating db tables")
