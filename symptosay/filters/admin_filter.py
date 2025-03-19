@@ -15,4 +15,4 @@ class IsAdminFilter(BaseFilter):
         user_data = await get_user_by_id(user_id)
         logger.info("Filtered user: %s with user_data: %s", user_id, user_data)
 
-        return await check_is_admin(user_data["user_id"])
+        return await check_is_admin(user_id)

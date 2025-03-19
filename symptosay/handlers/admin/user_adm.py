@@ -30,7 +30,7 @@ async def add_admin(message: Message, state: FSMContext):
 async def process_add_admin(message: Message, state: FSMContext):
     target_id = int(message.text.strip())
 
-    if await toggle_admin(target_id, True):
+    if await toggle_admin(target_id, is_admin=True):
         await message.reply(
             f"Пользователь {message.text.strip()} стал админом", reply_markup=await get_main_kb(message.from_user.id)
         )
@@ -49,7 +49,7 @@ async def remove_admin(message: Message, state: FSMContext):
 async def process_remove_admin(message: Message, state: FSMContext):
     target_id = int(message.text.strip())
 
-    if await toggle_admin(target_id, False):
+    if await toggle_admin(target_id, is_admin=False):
         await message.reply(
             f"Пользователь {target_id} потерял права админа", reply_markup=await get_main_kb(message.from_user.id)
         )

@@ -10,7 +10,3 @@ dependencies = [
   "dotenv>=0.9.9",
   "httpx>=0.28.1",
 ]
-
-[tool.basedpyright]
-reportUnusedCallResult = false
-reportAny = false

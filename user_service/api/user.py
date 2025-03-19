@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Sequence
 from typing import Annotated
 
 from db import get_db
@@ -15,7 +16,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/api/users/register", response_model=UserResponse)
+@router.post("/api/users/register")
 async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(get_db)]) -> UserResponse:
     is_admin = user.user_id in get_admins()
     new_user = User(user_id=user.user_id, username=user.username, is_admin=is_admin)
@@ -29,7 +30,7 @@ async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(
     return new_user
 
 
-@router.get("/api/users/{user_id}", response_model=UserResponse)
+@router.get("/api/users/{user_id}")
 async def get_user_by_id(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]) -> UserResponse:
     logger.info("Searching for user with ID %s", user_id)
     result = await db.execute(select(User).where(User.user_id == user_id))
@@ -39,15 +40,14 @@ async def get_user_by_id(user_id: int, db: Annotated[AsyncSession, Depends(get_d
     return user
 
 
-@router.get("/api/users", response_model=list[UserResponse])
-async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> list[UserResponse]:
+@router.get("/api/users")
+async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> Sequence[User]:
     logger.info("Fetching all users from the database")
     result = await db.execute(select(User))
-    users = result.scalars().all()
-    return users
+    return result.scalars().all()
 
 
-@router.patch("/api/users/{user_id}/toggle-admin", response_model=UserResponse)
+@router.patch("/api/users/{user_id}/toggle-admin")
 async def toggle_admin(
     user_id: int, data: UserToggleAdmin, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> UserResponse:

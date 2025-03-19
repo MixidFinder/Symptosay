@@ -30,8 +30,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d users"]
-      interval: 5s
-      timeout: 5s
+      interval: 2s
+      timeout: 3s
       retries: 5
     networks:
       - app_network
