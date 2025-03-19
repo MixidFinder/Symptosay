@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Sequence
 from typing import Annotated
 
 from db import get_db
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/api/users/register")
-async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(get_db)]) -> UserResponse:
+async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(get_db)]) -> UserRegister:
     is_admin = user.user_id in get_admins()
     new_user = User(user_id=user.user_id, username=user.username, is_admin=is_admin)
     logger.info("Get new_user %s, %s, %s", new_user.user_id, new_user.username, new_user.is_admin)
@@ -27,7 +26,7 @@ async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(
     await db.refresh(new_user)
     logger.info("User %s, %s successfully registered", new_user.user_id, new_user.username)
 
-    return new_user
+    return user
 
 
 @router.get("/api/users/{user_id}")
@@ -41,10 +40,11 @@ async def get_user_by_id(user_id: int, db: Annotated[AsyncSession, Depends(get_d
 
 
 @router.get("/api/users")
-async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> Sequence[User]:
+async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> list[UserResponse]:
     logger.info("Fetching all users from the database")
     result = await db.execute(select(User))
-    return result.scalars().all()
+    users = result.scalars().all()
+    return list(users)
 
 
 @router.patch("/api/users/{user_id}/toggle-admin")
