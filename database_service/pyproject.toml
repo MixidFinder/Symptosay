@@ -1,0 +1,17 @@
+[project]
+name = "database-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic==1.11.1",
+    "asyncpg==0.30.0",
+    "fastapi==0.103.2",
+    "greenlet==3.1.1",
+    "pydantic==2.10.6",
+    "python-dotenv==1.0.0",
+    "ruff==0.9.10",
+    "sqlalchemy==2.0.17",
+    "uvicorn==0.23.2",
+]
