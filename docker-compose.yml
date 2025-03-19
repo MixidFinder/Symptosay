@@ -1,20 +1,4 @@
-version: "3.9"
-
 services:
-  database_service_db:
-    image: postgres:17
-    container_name: db
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-    volumes:
-      - ./init-scripts:/docker-entrypoint-initdb.d
-      - dbdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - app_network
-
   symptosay:
     build: ./symptosay
     container_name: symptosay
@@ -32,9 +16,31 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      - database_service_db
     ports:
       - "8001:8001"
+    networks:
+      - app_network
+
+  database_service_db:
+    image: postgres:17-alpine3.20
+    container_name: database_service_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWD}
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5433"
+    networks:
+      - app_network
+
+  user_service:
+    build: ./user_service
+    container_name: user_service
+    ports:
+      - "8000:8000"
     networks:
       - app_network
     depends_on:
@@ -51,7 +57,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d users"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d users" ]
       interval: 2s
       timeout: 3s
       retries: 5
