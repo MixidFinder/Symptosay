@@ -17,6 +17,8 @@ services:
       - .env
     depends_on:
       - database_service_db
+    volumes:
+      - ./database_service/migrations:/app/migrations
     ports:
       - "8001:8001"
     networks:
@@ -29,10 +31,9 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWD}
     volumes:
-      - ./init-scripts:/docker-entrypoint-initdb.d
-      - dbdata:/var/lib/postgresql/data
+      - database_service_db:/var/lib/postgresql/data
     ports:
-      - "5433:5433"
+      - "5433:5432"
     networks:
       - app_network
 
@@ -46,6 +47,8 @@ services:
     depends_on:
       user_service_db:
         condition: service_healthy
+    volumes:
+      - ./user_service/migrations:/app/migrations
     env_file:
       - ./.env
 
@@ -61,6 +64,10 @@ services:
       interval: 2s
       timeout: 3s
       retries: 5
+    volumes:
+      - user_service_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - app_network
 
@@ -69,4 +76,7 @@ networks:
     driver: bridge
 
 volumes:
-  dbdata:
+  user_service_db:
+    driver: local
+  database_service_db:
+    driver: local

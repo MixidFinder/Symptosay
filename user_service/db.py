@@ -31,12 +31,3 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     except Exception:
         logger.exception("Session error")
         raise
-
-
-async def init_db():
-    try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-            logger.info("DB tables created successfully")
-    except Exception:
-        logger.exception("Error creating db tables")

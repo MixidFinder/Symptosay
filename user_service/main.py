@@ -2,7 +2,6 @@ import logging
 from contextlib import asynccontextmanager
 
 from api.user import router as user_router
-from db import init_db
 from fastapi import FastAPI
 
 logging.basicConfig(
@@ -18,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
     yield
 
 
