@@ -1,8 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.diseases import Disease, disease_symptom
 from app.models.symptoms import Symptom
 from app.schemas.diseases import DiseaseCreate
+
 
 async def create_disease(db: AsyncSession, disease: DiseaseCreate) -> Disease:
     new_disease = Disease(name=disease.name, description=disease.description)
@@ -11,9 +13,11 @@ async def create_disease(db: AsyncSession, disease: DiseaseCreate) -> Disease:
     await db.refresh(new_disease)
     return new_disease
 
+
 async def get_diseases(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Disease]:
     result = await db.execute(select(Disease).offset(skip).limit(limit))
     return result.scalars().all()
+
 
 async def add_symptom(db: AsyncSession, disease_id: int, symptom_id: int) -> None:
     stmt_d = select(Disease).where(Disease.id == disease_id)
@@ -28,7 +32,12 @@ async def add_symptom(db: AsyncSession, disease_id: int, symptom_id: int) -> Non
     await db.execute(d_symptoms)
     await db.commit()
 
+
 async def get_disease_symptoms(db: AsyncSession, disease_id: int):
-    stmt = select(Symptom).join(disease_symptom, Symptom.id == disease_symptom.c.symptom_id).where(disease_symptom.c.disease_id == disease_id)
+    stmt = (
+        select(Symptom)
+        .join(disease_symptom, Symptom.id == disease_symptom.c.symptom_id)
+        .where(disease_symptom.c.disease_id == disease_id)
+    )
     result = await db.execute(stmt)
     return result.scalars().all()

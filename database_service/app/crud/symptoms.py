@@ -1,7 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.symptoms import Symptom
 from app.schemas.symptoms import SymptomCreate, SymptomsBatchCreate
+
 
 async def create_symptom(db: AsyncSession, symptom: SymptomCreate) -> Symptom:
     new_symptom = Symptom(name=symptom.name, description=symptom.description)
@@ -10,9 +12,11 @@ async def create_symptom(db: AsyncSession, symptom: SymptomCreate) -> Symptom:
     await db.refresh(new_symptom)
     return new_symptom
 
+
 async def get_symptoms(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Symptom]:
     result = await db.execute(select(Symptom).offset(skip).limit(limit))
     return result.scalars().all()
+
 
 async def create_symptoms_batch(db: AsyncSession, batch: SymptomsBatchCreate) -> list[Symptom]:
     names = [x.strip() for x in batch.names.split(",") if x.strip()]
@@ -25,6 +29,7 @@ async def create_symptoms_batch(db: AsyncSession, batch: SymptomsBatchCreate) ->
     for i in created:
         await db.refresh(i)
     return created
+
 
 async def get_by_name(db: AsyncSession, name: str) -> Symptom | None:
     stmt = select(Symptom).where(Symptom.name == name)
