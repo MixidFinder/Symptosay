@@ -1,17 +1,14 @@
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String, Text, Table, ForeignKey, MetaData
-
-DiseasesBase = declarative_base()
-metadata_obj = MetaData()
+from sqlalchemy import Column, Integer, String, Text, Table, ForeignKey
+from app.models.base import Base
 
 disease_symptom = Table(
     "disease_symptom",
-    metadata_obj,
+    Base.metadata,
     Column("disease_id", Integer, ForeignKey("diseases.id"), primary_key=True),
     Column("symptom_id", Integer, ForeignKey("symptoms.id"), primary_key=True),
 )
 
-class Disease(DiseasesBase):
+class Disease(Base):
     __tablename__ = "diseases"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(200), nullable=False, unique=True, index=True)

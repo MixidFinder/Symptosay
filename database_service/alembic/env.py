@@ -1,83 +1,59 @@
+import asyncio
 import os
-import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 load_dotenv()
 
-SYMPTOMS_DB_URL = os.getenv("SYMPTOMS_DATABASE_URL")
-USER_SYMPTOMS_DB_URL = os.getenv("USER_SYMPTOMS_DATABASE_URL")
-
-filename = context.config.config_file_name.lower() if context.config else ""
-
-if "alembic_symptoms.ini" in filename:
-    if not SYMPTOMS_DB_URL:
-        raise ValueError(
-            "SYMPTOMS_DATABASE_URL не установлена в окружении (.env), "
-            "а вы запускаете alembic_symptoms.ini"
-        )
-    context.config.set_main_option("sqlalchemy.url", SYMPTOMS_DB_URL)
-
-elif "alembic_user_symptoms.ini" in filename:
-    if not USER_SYMPTOMS_DB_URL:
-        raise ValueError(
-            "USER_SYMPTOMS_DATABASE_URL не установлена в окружении (.env), "
-            "а вы запускаете alembic_user_symptoms.ini"
-        )
-    context.config.set_main_option("sqlalchemy.url", USER_SYMPTOMS_DB_URL)
-else:
-    raise ValueError(
-        "Не могу определить, для какой базы запускать миграции. Проверьте, что -c "
-        "указывает на alembic_symptoms.ini или alembic_user_symptoms.ini"
-    )
+from app.models.base import Base
+from app.models import diseases, symptoms, user_symptoms  
 
 config = context.config
+fileConfig(config.config_file_name)
 
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-from app.models.symptoms import SymptomsBase
+target_metadata = Base.metadata
 
-from app.models.user_symptoms import UserSymptomsBase
-
-target_metadata = None
-
-if "alembic_symptoms.ini" in filename:
-    target_metadata = SymptomsBase.metadata
-elif "alembic_user_symptoms.ini" in filename:
-    target_metadata = UserSymptomsBase.metadata
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True,
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
-def run_migrations_online():
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),  
-        prefix="sqlalchemy.",  
+
+def do_run_migrations(connection):
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_migrations_online():
+    connectable = create_async_engine(
+        config.get_main_option("sqlalchemy.url"),
         poolclass=pool.NullPool,
     )
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
 
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection,  
-            target_metadata=target_metadata,
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    asyncio.run(run_migrations_online())

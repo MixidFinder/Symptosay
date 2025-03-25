@@ -7,7 +7,6 @@ from app.api import symptoms, diseases, user_symptoms
 
 setup_logging()
 logger = logging.getLogger("app")
-
 app = FastAPI(title="Database Service")
 
 app.add_middleware(
