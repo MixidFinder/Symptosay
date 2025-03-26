@@ -2,20 +2,19 @@ import asyncio
 import os
 from logging.config import fileConfig
 
+from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
-from alembic import context
 
-from dotenv import load_dotenv
 load_dotenv()
 
-from app.models.base import Base
-from app.models import diseases, symptoms, user_symptoms  
+from app.models.symptoms import Base
 
 config = context.config
 fileConfig(config.config_file_name)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_SERVICE_DB")
 if DATABASE_URL:
     config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
