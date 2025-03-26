@@ -20,12 +20,17 @@ class UserDataMiddleware(BaseMiddleware):
 
         user_data = await get_user_by_id(user_id)
 
-        if not user_data:
-            admins = os.getenv("ADMINS", "").split(",")
-            is_admin = str(user_id) in admins
-            new_user = {"user_id": user_id, "username": username, "is_admin": is_admin}
+        admins = os.getenv("ADMINS", "").split(",")
+        is_admin = str(user_id) in admins
 
+        if not user_data:
+            new_user = {"user_id": user_id, "username": username, "is_admin": is_admin}
             user_data = await register_user(new_user)
+            if user_data is None:
+                user_data = {"user_id": user_id, "username": username, "is_admin": is_admin}
+
+        if "is_admin" not in user_data:
+            user_data["is_admin"] = is_admin
 
         data["user_data"] = user_data
         return await handler(event, data)
