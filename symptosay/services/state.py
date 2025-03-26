@@ -24,13 +24,13 @@ async def save_context(
     await state.update_data(menu_history=history)
 
 
-async def load_context(message: Message, state: FSMContext):
+async def load_context(message: Message, state: FSMContext, user_data: dict[str, Any]):
     data = await state.get_data()
     history = data.get("menu_history", [])
 
     if not history:
         await state.clear()
-        await message.reply("Главное меню", reply_markup=await get_main_kb(message.from_user.id))
+        await message.reply("Главное меню", reply_markup=await get_main_kb(user_data["is_admin"]))
         return
 
     previous_context = history.pop()

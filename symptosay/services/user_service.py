@@ -42,14 +42,14 @@ async def register_user(user_data: dict[str, str]):
         return None
 
 
-async def toggle_admin(user_id: int, is_admin: bool):
+async def toggle_admin(username: str, is_admin: bool):
     try:
         async with httpx.AsyncClient() as session:
             response = await session.patch(
-                f"{os.getenv('USER_SERVICE_URL')}/users/{user_id}/toggle-admin", json={"is_admin": is_admin}, timeout=5
+                f"{os.getenv('USER_SERVICE_URL')}/users/{username}/toggle-admin", json={"is_admin": is_admin}, timeout=5
             )
             response.raise_for_status()
-            logger.info("User %s toggle-admin", user_id)
+            logger.info("User %s toggle-admin", username)
             return response.json()
     except httpx.HTTPStatusError:
         logger.exception("User toggle-admin error")
