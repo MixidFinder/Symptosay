@@ -8,6 +8,8 @@ load_dotenv(find_dotenv())
 
 logger = logging.getLogger(__name__)
 
+USER_SERVICE_URL = os.getenv("USER_SERICE_URL")
+
 
 async def check_is_admin(user_id: int) -> bool:
     user_data = await get_user_by_id(user_id)
@@ -20,7 +22,7 @@ async def check_is_admin(user_id: int) -> bool:
 async def get_user_by_id(user_id: int):
     try:
         async with httpx.AsyncClient() as session:
-            response = await session.get(f"{os.getenv('USER_SERVICE_URL')}/users/{user_id}", timeout=5)
+            response = await session.get(f"({USER_SERVICE_URL}/users/{user_id}", timeout=5)
 
             response.raise_for_status()
 
@@ -33,7 +35,7 @@ async def get_user_by_id(user_id: int):
 async def register_user(user_data: dict[str, str]):
     try:
         async with httpx.AsyncClient() as session:
-            response = await session.post(f"{os.getenv('USER_SERVICE_URL')}/users/register", json=user_data, timeout=5)
+            response = await session.post(f"{USER_SERVICE_URL}/users/register", json=user_data, timeout=5)
             response.raise_for_status()
             logger.info("User %s registered", user_data["user_id"])
             return response.json()
@@ -46,7 +48,7 @@ async def toggle_admin(username: str, is_admin: bool):
     try:
         async with httpx.AsyncClient() as session:
             response = await session.patch(
-                f"{os.getenv('USER_SERVICE_URL')}/users/{username}/toggle-admin", json={"is_admin": is_admin}, timeout=5
+                f"{USER_SERVICE_URL}/users/{username}/toggle-admin", json={"is_admin": is_admin}, timeout=5
             )
             response.raise_for_status()
             logger.info("User %s toggle-admin", username)
