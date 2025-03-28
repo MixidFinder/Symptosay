@@ -6,34 +6,21 @@ from httpx import AsyncClient, HTTPStatusError
 logger = logging.getLogger(__name__)
 
 
-async def get_service(url: str):
-    logger.info("Get request to url: %s", url)
+async def request_service(method: str, url: str, data: dict[str, Any] | None = None):
+    logger.info("Request to %s, method: %s", url, method.upper())
     try:
         async with AsyncClient() as session:
-            response = await session.get(url=url, timeout=5)
+            client_method = getattr(session, method.lower())
+
+            if method.lower() in ["put", "post", "patch"]:
+                response = await client_method(url=url, json=data, timeout=5)
+            else:
+                response = await client_method(url=url, timeout=5)
+
             response.raise_for_status()
             return response.json()
     except HTTPStatusError:
         return None
-
-
-async def post_service(url: str, data: dict[str, Any]):
-    logger.info("Post request to url: %s", url)
-    try:
-        async with AsyncClient() as session:
-            response = await session.post(url=url, json=data, timeout=5)
-            response.raise_for_status()
-            return response.json()
-    except HTTPStatusError:
-        return None
-
-
-async def patch_service(url: str, data: dict[str, Any]):
-    logger.info("Patch request to url: %s", url)
-    try:
-        async with AsyncClient() as session:
-            response = await session.patch(url=url, json=data, timeout=5)
-            response.raise_for_status()
-            return response.json()
-    except HTTPStatusError:
+    except AttributeError:
+        logger.exception("Invalid HTTP method: %s", method.upper())
         return None

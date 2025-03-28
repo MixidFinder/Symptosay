@@ -21,14 +21,14 @@ async def check_is_admin(user_id: int) -> bool:
 
 
 async def get_user_by_id(user_id: int):
-    return await connection.get_service(f"{USER_SERVICE_URL}/api/users/{user_id}")
+    return await connection.request_service("get", f"{USER_SERVICE_URL}/api/users/{user_id}")
 
 
 async def register_user(user_data: dict[str, str]):
-    return await connection.post_service(f"{USER_SERVICE_URL}/api/users/register", data=user_data)
+    return await connection.request_service("post", f"{USER_SERVICE_URL}/api/users/register", user_data)
 
 
 async def toggle_admin(username: str, is_admin: bool):
-    return await connection.patch_service(
-        f"{USER_SERVICE_URL}/api/users/{username}/toggle-admin", data={"is_admin": is_admin}
+    return await connection.request_service(
+        "patch", f"{USER_SERVICE_URL}/api/users/{username}/toggle-admin", data={"is_admin": is_admin}
     )
