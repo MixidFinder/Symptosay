@@ -3,8 +3,6 @@ services:
     build: ./symptosay
     container_name: symptosay
     env_file: ./.env
-    depends_on:
-      - user_service
     networks:
       - app_network
 
