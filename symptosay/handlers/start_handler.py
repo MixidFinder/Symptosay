@@ -19,5 +19,5 @@ async def send_welcome(message: Message, user_data: dict[str, Any]) -> None:
 
     await message.reply(
         "Привет! Это бот по отслеживанию симптомов. Если тебе нужна помощь по боту, нажми кнопку 'Помощь'",
-        reply_markup=await get_main_kb(is_admin=user_data["is_admin"]),
+        reply_markup=get_main_kb(is_admin=user_data["is_admin"]),
     )

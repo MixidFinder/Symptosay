@@ -1,40 +1,53 @@
-from __future__ import annotations
-
-from typing import Any
+import logging
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from keyboards.main_kb import get_main_kb
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from keyboards.main_kb import get_inline_main_kb, get_main_kb
 
 HISTORY_LEN = 10
+logger = logging.getLogger(__name__)
 
 
 async def save_context(
     state: FSMContext,
-    keyboard: ReplyKeyboardMarkup | ReplyKeyboardRemove,
-    text: str,
-    additional_data: dict[str, Any] | None = None,
+    keyboard: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup,
+    text: str | None = None,
 ):
     data = await state.get_data()
     history = data.get("menu_history", [])
 
-    current_context = {"text": text, "keyboard": keyboard, "state": await state.get_state(), "data": additional_data}
+    current_context = {"text": text, "keyboard": keyboard, "state": await state.get_state()}
+    logger.debug("Saved context: %s", current_context)
+    logger.debug("History: %s", history)
     history.append(current_context)
 
     await state.update_data(menu_history=history)
 
 
-async def load_context(message: Message, state: FSMContext, user_data: dict[str, Any]):
+async def load_context(event: Message | CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    logger.debug("State data %s", data)
     history = data.get("menu_history", [])
+    is_callback = isinstance(event, CallbackQuery)
+
+    user_data = data.get("user_data")
+    logger.debug("Load context with user data: %s", user_data)
 
     if not history:
         await state.clear()
-        await message.reply("Главное меню", reply_markup=await get_main_kb(user_data["is_admin"]))
+        if is_callback:
+            await event.message.edit_text("Главное меню", reply_markup=get_inline_main_kb())
+        else:
+            await event.reply("Главное меню", reply_markup=get_main_kb(user_data["is_admin"]))
         return
 
     previous_context = history.pop()
     await state.update_data(menu_history=history)
     await state.set_state(previous_context["state"])
 
-    await message.reply(previous_context["text"], reply_markup=previous_context["keyboard"])
+    logger.debug("Load context with context: %s", previous_context)
+
+    if is_callback:
+        await event.message.edit_text(text=previous_context["text"], reply_markup=previous_context["keyboard"])
+    else:
+        await event.reply(previous_context["text"], reply_markup=previous_context["keyboard"])
