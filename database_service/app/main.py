@@ -1,5 +1,6 @@
 import logging
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,3 +28,7 @@ app.include_router(user_symptoms.router, prefix="/api/user-symptoms", tags=["use
 async def root():
     logger.debug("Root endpoint")
     return {"message": "Database Service running"}
+
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8001)

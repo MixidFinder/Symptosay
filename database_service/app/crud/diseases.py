@@ -13,9 +13,11 @@ async def create_disease(db: AsyncSession, disease: DiseaseCreate) -> Disease:
     await db.refresh(new_disease)
     return new_disease
 
+
 async def get_diseases(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(select(Disease).offset(skip).limit(limit))
     return result.scalars().all()
+
 
 async def add_symptom(db: AsyncSession, disease_id: int, symptom_id: int):
     stmt_d = select(Disease).where(Disease.id == disease_id)

@@ -1,17 +1,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated
 from sqlalchemy import select
-from app.database import get_db
-from app.schemas.symptoms import SymptomCreate, SymptomOut, SymptomsBatchCreate
-from app.models.symptoms import Symptom
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.crud import symptoms as crud_symptoms
-from app.database import session
+from app.database import get_db
+from app.models.symptoms import Symptom
 from app.schemas.symptoms import SymptomCreate, SymptomOut, SymptomsBatchCreate
 
 router = APIRouter()
+
 
 @router.get("", response_model=list[SymptomOut])
 async def read_symptoms(skip: int = 0, limit: int = 100, db: Annotated[AsyncSession, Depends(get_db)] = None):
@@ -22,6 +21,7 @@ async def read_symptoms(skip: int = 0, limit: int = 100, db: Annotated[AsyncSess
 async def create_symptom(symptom: SymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_symptoms.create_symptom(db, symptom)
 
+
 @router.get("/{symptom_id}", response_model=SymptomOut)
 async def get_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     stmt = select(Symptom).where(Symptom.id == symptom_id)
@@ -30,6 +30,7 @@ async def get_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(get_d
     if not symptom:
         raise HTTPException(status_code=404, detail="Symptom not found")
     return symptom
+
 
 @router.patch("/{symptom_id}", response_model=SymptomOut)
 async def patch_symptom(symptom_id: int, payload: SymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -44,6 +45,7 @@ async def patch_symptom(symptom_id: int, payload: SymptomCreate, db: Annotated[A
     await db.refresh(symptom)
     return symptom
 
+
 @router.delete("/{symptom_id}", response_model=SymptomOut)
 async def delete_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     stmt = select(Symptom).where(Symptom.id == symptom_id)
@@ -54,6 +56,7 @@ async def delete_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(ge
     await db.delete(symptom)
     await db.commit()
     return symptom
+
 
 @router.post("/batch", response_model=list[SymptomOut])
 async def create_symptoms_batch(batch: SymptomsBatchCreate, db: Annotated[AsyncSession, Depends(get_db)]):

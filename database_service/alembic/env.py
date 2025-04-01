@@ -9,7 +9,10 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 load_dotenv()
 
-from app.models.symptoms import Base
+from app.database import Base
+from app.models.diseases import Disease
+from app.models.symptoms import Symptom
+from app.models.user_symptoms import UserSymptom
 
 config = context.config
 fileConfig(config.config_file_name)
@@ -19,6 +22,7 @@ if DATABASE_URL:
     config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 target_metadata = Base.metadata
+models = Disease, Symptom, UserSymptom
 
 
 def run_migrations_offline():

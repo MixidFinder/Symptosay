@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, DateTime
-from app.models.base import Base
+from sqlalchemy import Column, DateTime, Integer
+
+from app.database import Base
+
 
 class UserSymptom(Base):
     __tablename__ = "user_symptoms"

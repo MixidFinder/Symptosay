@@ -2,13 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated
-from app.database import get_db
-from app.schemas.user_symptoms import UserSymptomCreate, UserSymptomOut, UserSymptomUpdate
+
 from app.crud import user_symptoms as crud_user_symptoms
+from app.database import get_db
 from app.schemas.user_symptoms import UserSymptomCreate, UserSymptomOut, UserSymptomUpdate
 
 router = APIRouter()
+
 
 @router.post("", response_model=UserSymptomOut)
 async def record_user_symptom(record: UserSymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -16,7 +16,9 @@ async def record_user_symptom(record: UserSymptomCreate, db: Annotated[AsyncSess
 
 
 @router.get("/{user_id}", response_model=list[UserSymptomOut])
-async def read_user_symptoms(user_id: int, skip: int = 0, limit: int = 100, db: Annotated[AsyncSession, Depends(get_db)] = None):
+async def read_user_symptoms(
+    user_id: int, skip: int = 0, limit: int = 100, db: Annotated[AsyncSession, Depends(get_db)] = None
+):
     return await crud_user_symptoms.get_user_symptoms(db, user_id, skip, limit)
 
 
