@@ -1,18 +1,19 @@
 import os
 
+from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-Base = declarative_base()
+DATABASE_URL = os.getenv("DATABASE_SERVICE_DB")
 
-load_dotenv(find_dotenv())
+engine = create_async_engine(DATABASE_URL, echo=True)
+SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
-DATABASE_SERVICE_DB = os.getenv("DATABASE_SERVICE_DB")
 
-if not DATABASE_SERVICE_DB:
-    raise ValueError("Missing database URLs")
-
-symptoms_engine = create_async_engine(DATABASE_SERVICE_DB, echo=True)
-
-session = sessionmaker(symptoms_engine, class_=AsyncSession, expire_on_commit=False)
+async def get_db():
+    async with SessionLocal() as session:
+        yield session

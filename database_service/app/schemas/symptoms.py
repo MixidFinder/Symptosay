@@ -1,10 +1,11 @@
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, List
 
 from pydantic import BaseModel
 
 
 class SymptomCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
 
 
@@ -18,4 +19,5 @@ class SymptomOut(BaseModel):
 
 
 class SymptomsBatchCreate(BaseModel):
-    names: str
+    names: List[str]
+

@@ -12,11 +12,12 @@ services:
       dockerfile: Dockerfile
     container_name: database_service
     env_file:
-      - .env
+      - ./.env
     depends_on:
-      - database_service_db
+      database_service_db:
+        condition: service_healthy
     volumes:
-      - ./database_service/migrations:/app/migrations
+      - ./database_service/alembic:/app/alembic
     ports:
       - "8001:8001"
     networks:
@@ -26,8 +27,14 @@ services:
     image: postgres:17-alpine3.20
     container_name: database_service_db
     environment:
+      POSTGRES_DB: database_service_db
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d database_service_db" ]
+      interval: 2s
+      timeout: 3s
+      retries: 5
     volumes:
       - database_service_db:/var/lib/postgresql/data
     ports:

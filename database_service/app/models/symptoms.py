@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text
-
-from app.database import Base
-
+from app.models.base import Base
 
 class Symptom(Base):
     __tablename__ = "symptoms"

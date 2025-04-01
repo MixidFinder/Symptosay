@@ -8,7 +8,6 @@ from app.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger("app")
-
 app = FastAPI(title="Database Service")
 
 app.add_middleware(
