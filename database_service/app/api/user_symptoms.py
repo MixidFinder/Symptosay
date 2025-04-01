@@ -9,13 +9,11 @@ router = APIRouter()
 
 @router.post("", response_model=UserSymptomOut)
 async def record_user_symptom(record: UserSymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    new_record = await crud_user_symptoms.record_user_symptom(db, record)
-    return new_record
+    return await crud_user_symptoms.record_user_symptom(db, record)
 
 @router.get("/{user_id}", response_model=list[UserSymptomOut])
 async def read_user_symptoms(user_id: int, skip: int = 0, limit: int = 100, db: Annotated[AsyncSession, Depends(get_db)] = None):
-    records = await crud_user_symptoms.get_user_symptoms(db, user_id, skip, limit)
-    return records
+    return await crud_user_symptoms.get_user_symptoms(db, user_id, skip, limit)
 
 @router.put("/{record_id}", response_model=UserSymptomOut)
 async def update_user_symptom(record_id: int, update: UserSymptomUpdate, db: Annotated[AsyncSession, Depends(get_db)]):
