@@ -18,7 +18,7 @@ async def save_context(
 
     current_context = {"text": text, "keyboard": keyboard, "state": await state.get_state()}
     logger.debug("Saved context: %s", current_context)
-    logger.debug("History: %s", history)
+    logger.debug("History keyboards: %s", history)
     history.append(current_context)
 
     await state.update_data(menu_history=history)
@@ -32,6 +32,7 @@ async def load_context(event: Message | CallbackQuery, state: FSMContext):
 
     user_data = data.get("user_data")
     logger.debug("Load context with user data: %s", user_data)
+    history.pop()
 
     if not history:
         await state.clear()
@@ -40,8 +41,7 @@ async def load_context(event: Message | CallbackQuery, state: FSMContext):
         else:
             await event.reply("Главное меню", reply_markup=get_main_kb(user_data["is_admin"]))
         return
-
-    previous_context = history.pop()
+    previous_context = history[-1]
     await state.update_data(menu_history=history)
     await state.set_state(previous_context["state"])
 
