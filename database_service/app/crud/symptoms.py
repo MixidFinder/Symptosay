@@ -1,22 +1,32 @@
+import logging
+
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.symptoms import Symptom
-from app.schemas.symptoms import SymptomCreate, SymptomsBatchCreate
+from app.schemas.symptoms import SymptomBase, SymptomsBatchCreate
+
+logger = logging.getLogger(__name__)
 
 
-async def create_symptom(db: AsyncSession, symptom: SymptomCreate):
-    new_symptom = Symptom(name=symptom.name, description=symptom.description)
-    db.add(new_symptom)
+async def create_symptom(db: AsyncSession, request: list[SymptomBase]):
+    logger.info("Get new symptoms: %s", request)
     try:
+        symptoms = [Symptom(**symptom.model_dump()) for symptom in request]
+        logger.info("DB symptoms: %s", symptoms)
+        db.add_all(symptoms)
         await db.commit()
-        await db.refresh(new_symptom)
-        return new_symptom
-    except IntegrityError:
+        for symptom in symptoms:
+            await db.refresh(symptom)
+    except IntegrityError as ie:
         await db.rollback()
-        raise HTTPException(status_code=409, detail="Symptom already exists")
+        raise HTTPException(status_code=409, detail="Symptom already exists") from ie
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e) from Exception
+    else:
+        return symptoms
 
 
 async def get_symptoms(db: AsyncSession, skip: int = 0, limit: int = 100):

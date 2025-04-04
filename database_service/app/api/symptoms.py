@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud import symptoms as crud_symptoms
 from app.database import get_db
 from app.models.symptoms import Symptom
-from app.schemas.symptoms import SymptomCreate, SymptomOut, SymptomsBatchCreate
+from app.schemas.symptoms import SymptomBase, SymptomOut, SymptomsBatchCreate
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=list[SymptomOut])
@@ -17,8 +20,9 @@ async def read_symptoms(skip: int = 0, limit: int = 100, db: Annotated[AsyncSess
     return await crud_symptoms.get_symptoms(db, skip, limit)
 
 
-@router.post("", response_model=SymptomOut)
-async def create_symptom(symptom: SymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+@router.put("", response_model=list[SymptomOut])
+async def create_symptom(symptom: list[SymptomBase], db: Annotated[AsyncSession, Depends(get_db)]):
+    logger.info("Creqte symptoms %s", symptom)
     return await crud_symptoms.create_symptom(db, symptom)
 
 
@@ -33,7 +37,7 @@ async def get_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(get_d
 
 
 @router.patch("/{symptom_id}", response_model=SymptomOut)
-async def patch_symptom(symptom_id: int, payload: SymptomCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+async def patch_symptom(symptom_id: int, payload: SymptomBase, db: Annotated[AsyncSession, Depends(get_db)]):
     stmt = select(Symptom).where(Symptom.id == symptom_id)
     result = await db.execute(stmt)
     symptom = result.scalar_one_or_none()
