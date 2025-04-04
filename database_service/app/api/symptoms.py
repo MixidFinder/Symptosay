@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import symptoms as crud_symptoms
@@ -65,3 +65,18 @@ async def delete_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(ge
 @router.post("/batch", response_model=list[SymptomOut])
 async def create_symptoms_batch(batch: SymptomsBatchCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_symptoms.create_symptoms_batch(db, batch)
+
+
+@router.delete("")
+async def delete_symptoms(request: list[SymptomBase], db: Annotated[AsyncSession, Depends(get_db)]):
+    symptoms = [symptom.name for symptom in request]
+    logger.debug("Symptoms: %s", symptoms)
+
+    if not symptoms:
+        raise HTTPException(status_code=400, detail="List symptoms empty")
+    try:
+        await db.execute(delete(Symptom).where(Symptom.name.in_(symptoms)))
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"DB error: {e}") from Exception
