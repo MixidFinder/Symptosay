@@ -20,7 +20,7 @@ async def read_symptoms(skip: int = 0, limit: int = 100, db: Annotated[AsyncSess
     return await crud_symptoms.get_symptoms(db, skip, limit)
 
 
-@router.put("", response_model=list[SymptomOut])
+@router.put("", response_model=list[SymptomBase])
 async def create_symptom(symptom: list[SymptomBase], db: Annotated[AsyncSession, Depends(get_db)]):
     logger.info("Creqte symptoms %s", symptom)
     return await crud_symptoms.create_symptom(db, symptom)

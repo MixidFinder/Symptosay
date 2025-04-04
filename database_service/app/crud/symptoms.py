@@ -24,7 +24,8 @@ async def create_symptom(db: AsyncSession, request: list[SymptomBase]):
         await db.rollback()
         raise HTTPException(status_code=409, detail="Symptom already exists") from ie
     except Exception as e:
-        raise HTTPException(status_code=500, detail=e) from Exception
+        logger.debug("Exception: %s", e)
+        raise HTTPException(status_code=500, detail="Db error") from Exception
     else:
         return symptoms
 
