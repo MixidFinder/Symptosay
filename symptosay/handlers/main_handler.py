@@ -5,7 +5,6 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from keyboards.main_kb import get_inline_main_kb, get_main_kb
-
 from services.state import load_context
 
 logger = logging.getLogger(__name__)

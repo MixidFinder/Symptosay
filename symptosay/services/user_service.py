@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -28,7 +29,9 @@ async def register_user(user_data: dict[str, str]):
     return await connection.request_service("post", f"{USER_SERVICE_URL}/api/users/register", user_data)
 
 
-async def toggle_admin(username: str, is_admin: bool):
+async def toggle_admin(user_data: dict[str, Any]):
     return await connection.request_service(
-        "patch", f"{USER_SERVICE_URL}/api/users/{username}/toggle-admin", data={"is_admin": is_admin}
+        "patch",
+        f"{USER_SERVICE_URL}/api/users/{user_data.get('username')}/toggle-admin",
+        data=user_data,
     )

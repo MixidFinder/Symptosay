@@ -1,26 +1,18 @@
 import logging
 from typing import Any
 
-from httpx import AsyncClient, HTTPStatusError
+from httpx import AsyncClient
 
 logger = logging.getLogger(__name__)
 
 
-async def request_service(method: str, url: str, data: dict[str, Any] | None = None):
+async def request_service(method: str, url: str, data: list[dict] | dict[str, Any] | None = None):
     logger.info("Request to %s, method: %s", url, method.upper())
-    try:
-        async with AsyncClient() as session:
-            client_method = getattr(session, method.lower())
+    async with AsyncClient() as session:
+        if method.lower() in ["put", "post", "patch", "delete"]:
+            response = await session.request(method=method.lower(), url=url, json=data, timeout=5)
+        else:
+            response = await session.request(method=method.lower(), url=url, timeout=5)
 
-            if method.lower() in ["put", "post", "patch"]:
-                response = await client_method(url=url, json=data, timeout=5)
-            else:
-                response = await client_method(url=url, timeout=5)
-
-            response.raise_for_status()
-            return response.json()
-    except HTTPStatusError:
-        return None
-    except AttributeError:
-        logger.exception("Invalid HTTP method: %s", method.upper())
-        return None
+        response.raise_for_status()
+        return response.json()

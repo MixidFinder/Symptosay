@@ -19,6 +19,7 @@ class UserListResponse(BaseModel):
 
 
 class UserToggleAdmin(BaseModel):
+    username: str
     is_admin: bool
 
 

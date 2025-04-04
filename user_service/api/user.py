@@ -16,6 +16,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+# TODO: change to put
 @router.post("/api/users/register")
 async def register_user(user: UserRegister, db: Annotated[AsyncSession, Depends(get_db)]) -> dict[str, str]:
     is_admin = user.user_id in get_admins()
@@ -62,11 +63,9 @@ async def list_all_users(db: Annotated[AsyncSession, Depends(get_db)]) -> list[U
 
 
 @router.patch("/api/users/{username}/toggle-admin")
-async def toggle_admin(
-    username: str, data: UserToggleAdmin, db: Annotated[AsyncSession, Depends(get_db)]
-) -> dict[str, str]:
-    logger.info("Toggle is_admin for user: %s to %s", username, data.is_admin)
-    result = await db.execute(select(User).where(User.username == username))
+async def toggle_admin(data: UserToggleAdmin, db: Annotated[AsyncSession, Depends(get_db)]) -> dict[str, str]:
+    logger.info("Toggle is_admin for user: %s to %s", data.username, data.is_admin)
+    result = await db.execute(select(User).where(User.username == data.username))
 
     user = result.scalar_one_or_none()
 
