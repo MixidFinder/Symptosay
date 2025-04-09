@@ -4,8 +4,7 @@ from typing import Any, Callable
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
-
-from services.user_service import get_user_by_id, register_user
+from services.adm_user_service import get_user_by_id, register_user
 
 
 class UserDataMiddleware(BaseMiddleware):

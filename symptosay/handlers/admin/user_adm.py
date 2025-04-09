@@ -7,8 +7,8 @@ from aiogram.types import CallbackQuery, Message
 from httpx import HTTPStatusError, codes
 from keyboards.admin_kb import get_admin_main_keyboard, get_admin_nav_kb, get_user_management_keyboard
 from keyboards.main_kb import get_main_kb
+from services.adm_user_service import toggle_admin
 from services.state import load_context, save_context
-from services.user_service import toggle_admin
 
 from .admin_states import AdminState
 

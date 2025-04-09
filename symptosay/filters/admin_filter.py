@@ -3,8 +3,7 @@ from typing import Any, override
 
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery, Message
-
-from services.user_service import check_is_admin
+from services.adm_user_service import check_is_admin
 
 logger = logging.getLogger(__name__)
 
