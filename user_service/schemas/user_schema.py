@@ -1,27 +1,27 @@
-from typing import List, Optional
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
 class UserRegister(BaseModel):
     user_id: int
     username: str
-    is_admin: Optional[bool] = False
-
-    class Config:
-        from_attributes = True
-
-
-class UserResponse(BaseModel):
-    user_id: int
-    username: str
     is_admin: bool
 
-    class Config:
-        from_attributes = True
+
+class UserResponse(UserRegister):
+    is_blocked: bool
+    created_date: datetime
 
 
 class UserListResponse(BaseModel):
-    users: List[UserResponse]
+    users: list[UserResponse]
 
-    class Config:
-        from_attributes = True
+
+class UserToggleAdmin(BaseModel):
+    username: str
+    is_admin: bool
+
+
+class UserToggleBan(BaseModel):
+    is_blocked: bool

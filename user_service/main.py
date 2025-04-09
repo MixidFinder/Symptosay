@@ -1,9 +1,8 @@
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from api.user import router as user_router
-from db import init_db
-
 import logging
+from contextlib import asynccontextmanager
+
+from api.user import router as user_router
+from fastapi import FastAPI
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,9 +17,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
     yield
 
 
-app = FastAPI(lifespan=lifespan)
-app.include_router(user_router)
+user_service = FastAPI(lifespan=lifespan)
+user_service.include_router(user_router)

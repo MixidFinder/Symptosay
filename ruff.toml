@@ -37,6 +37,10 @@ ignore = [
   "TD002",
   "TD003",
   "FIX002", # too verbose descriptions of todos
+  "ANN201",
+  "TC002",
+  "FA100",
+  "FA102",
 ]
 
 [format]
