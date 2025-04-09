@@ -8,6 +8,7 @@ from dotenv import find_dotenv, load_dotenv
 from handlers.admin.admin import admin_router
 from handlers.main_handler import main_router
 from handlers.start_handler import start_router
+from handlers.user_handler import user_router
 from middlewares.user_middleware import UserDataMiddleware
 
 logging.basicConfig(
@@ -35,9 +36,7 @@ dp = Dispatcher(storage=storage)
 dp.message.outer_middleware(UserDataMiddleware())
 dp.callback_query.outer_middleware(UserDataMiddleware())
 
-dp.include_routers(start_router)
-dp.include_routers(main_router)
-dp.include_routers(admin_router)
+dp.include_routers(start_router, main_router, admin_router, user_router)
 
 
 async def main() -> None:

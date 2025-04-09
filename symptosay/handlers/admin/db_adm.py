@@ -22,10 +22,23 @@ class SymptomsStates(StatesGroup):
     waiting_symptoms_del = State()
 
 
+class DiseaseStates(StatesGroup):
+    waiting_diseases_add = State()
+    waiting_diseases_del = State()
+
+
 @db_adm_router.callback_query(F.data == "add_symptoms_adm")
 async def add_db_symptoms(callback: CallbackQuery, state: FSMContext) -> None:
     text = "Введите симптомы через запятую"
     await state.set_state(SymptomsStates.waiting_symptoms_add)
+    await save_context(state, get_admin_nav_kb(), text)
+    await callback.message.edit_text(text, reply_markup=get_admin_nav_kb())
+
+
+@db_adm_router.callback_query(F.data == "add_diseases_adm")
+async def add_db_diseases(callback: CallbackQuery, state: FSMContext) -> None:
+    text = "Введите болезни через запятую"
+    await state.set_state(DiseaseStates.waiting_diseases_add)
     await save_context(state, get_admin_nav_kb(), text)
     await callback.message.edit_text(text, reply_markup=get_admin_nav_kb())
 
@@ -79,3 +92,52 @@ async def process_del_symptoms(message: Message, state: FSMContext, user_data: d
             await state.clear()
     else:
         await message.reply("Пожалуйста, введите симптомы через запятую, либо один симптом")
+
+
+@db_adm_router.message(DiseaseStates.waiting_diseases_add)
+async def process_add_diseases(message: Message, state: FSMContext, user_data: dict[str, Any]) -> None:
+    input_text = message.text.strip().lower()
+
+    diseases = [{"name": disease} for disease in map(str.strip, input_text.split(",")) if disease]
+    logger.info("Get diseases: %s", diseases)
+
+    if diseases:
+        try:
+            await db_service.add_diseases(diseases)
+            await message.reply("Болезни успешно добавлены", reply_markup=get_main_kb(user_data.get("is_admin", False)))
+        except HTTPStatusError as e:
+            if e.response.status_code == codes.CONFLICT:
+                await message.reply("Болезни уже есть в базе")
+        except Exception as e:
+            logger.debug("Exception: %s", e)
+            await message.reply("Произошла непредвиденная ошибка, попробуйте позже")
+        finally:
+            await state.clear()
+    else:
+        await message.reply("Пожалуйста, введите болезни через запятую, либо одну болезнь")
+
+
+@db_adm_router.callback_query(F.data == "delete_diseases_adm")
+async def delete_db_diseases(callback: CallbackQuery, state: FSMContext):
+    text = "Введите болезни через запятую"
+    await state.set_state(DiseaseStates.waiting_diseases_del)
+    await save_context(state, get_admin_nav_kb(), text)
+    await callback.message.edit_text(text, reply_markup=get_admin_nav_kb())
+
+
+@db_adm_router.message(DiseaseStates.waiting_diseases_del)
+async def process_del_diseases(message: Message, state: FSMContext, user_data: dict[str, Any]):
+    input_text = message.text.strip().lower()
+    diseases = [{"name": disease} for disease in map(str.strip, input_text.split(",")) if disease]
+    logger.info("Get diseases: %s", json.dumps(diseases))
+    if diseases:
+        try:
+            await db_service.del_diseases(diseases)
+            await message.reply("Болезни успешно удалены", reply_markup=get_main_kb(user_data.get("is_admin", False)))
+        except Exception as e:
+            logger.info("Exception: %s", e)
+            await message.reply("Произошла непредвиденная ошибка, попробуйте позже")
+        finally:
+            await state.clear()
+    else:
+        await message.reply("Пожалуйста, введите болезни через запятую, либо одну болезнь")

@@ -1,5 +1,10 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+import logging
+from typing import Any
+
+from aiogram.types import InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+
+logger = logging.getLogger(__name__)
 
 
 def get_main_kb(is_admin: bool = False) -> ReplyKeyboardMarkup:
@@ -28,6 +33,25 @@ def get_inline_nav_kb():
     return keyboard.as_markup()
 
 
-def get_inline_main_kb():
-    keyboard = InlineKeyboardBuilder()
-    keyboard.button(text="Кнопка", callback_data="bttnn")
+def build_pagination_db_kb(data: dict[str, Any], action: str, target: str):
+    builder = InlineKeyboardBuilder()
+    logger.debug("Get pagination data: %s, action: %s, target: %s", data, action, target)
+
+    for item in data["items"]:
+        builder.button(text=item["name"], callback_data=f"{action}_{target}_{item['id']}")
+
+    pagination_btns = []
+
+    if data["page"] > 1:
+        pagination_btns.append(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"page_{data['page'] - 1}"))
+
+    if data["page"] * data["size"] < data["total"]:
+        pagination_btns.append(InlineKeyboardButton(text="Далее ➡️", callback_data=f"page_{data['page'] + 1}"))
+
+    builder.adjust(1)
+    if pagination_btns:
+        builder.row(*pagination_btns)
+
+    builder.row(InlineKeyboardButton(text="Отмена", callback_data="home"))
+
+    return builder.as_markup()

@@ -2,7 +2,7 @@ import logging
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from keyboards.main_kb import get_inline_main_kb, get_main_kb
+from keyboards.main_kb import get_main_kb
 
 HISTORY_LEN = 10
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ async def load_context(event: Message | CallbackQuery, state: FSMContext):
     if not history:
         await state.clear()
         if is_callback:
-            await event.message.edit_text("Главное меню", reply_markup=get_inline_main_kb())
+            await event.message.edit_text("Главное меню", reply_markup=get_main_kb(user_data["is_admin"]))
         else:
             await event.reply("Главное меню", reply_markup=get_main_kb(user_data["is_admin"]))
         return
