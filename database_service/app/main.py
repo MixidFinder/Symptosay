@@ -3,6 +3,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_pagination import add_pagination
 
 from app.api import diseases, symptoms, user_symptoms
 from app.logging_config import setup_logging
@@ -10,6 +11,8 @@ from app.logging_config import setup_logging
 setup_logging()
 logger = logging.getLogger("app")
 app = FastAPI(title="Database Service")
+
+add_pagination(app)
 
 app.add_middleware(
     CORSMiddleware,

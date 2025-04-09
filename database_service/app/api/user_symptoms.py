@@ -22,7 +22,7 @@ async def read_user_symptoms(
     return await crud_user_symptoms.get_user_symptoms(db, user_id, skip, limit)
 
 
-@router.put("/{record_id}", response_model=UserSymptomOut)
+@router.patch("/{record_id}", response_model=UserSymptomOut)
 async def update_user_symptom(record_id: int, update: UserSymptomUpdate, db: Annotated[AsyncSession, Depends(get_db)]):
     updated = await crud_user_symptoms.update_user_symptom(db, record_id, update)
     if not updated:

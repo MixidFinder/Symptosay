@@ -15,7 +15,3 @@ class SymptomOut(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class SymptomsBatchCreate(BaseModel):
-    names: list[str]

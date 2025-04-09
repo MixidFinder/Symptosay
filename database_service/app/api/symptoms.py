@@ -2,27 +2,28 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_pagination import Page
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import symptoms as crud_symptoms
 from app.database import get_db
 from app.models.symptoms import Symptom
-from app.schemas.symptoms import SymptomBase, SymptomOut, SymptomsBatchCreate
+from app.schemas.symptoms import SymptomBase, SymptomOut
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
 
-@router.get("", response_model=list[SymptomOut])
-async def read_symptoms(skip: int = 0, limit: int = 100, db: Annotated[AsyncSession, Depends(get_db)] = None):
-    return await crud_symptoms.get_symptoms(db, skip, limit)
+@router.get("", response_model=Page[SymptomOut])
+async def read_symptoms(db: Annotated[AsyncSession, Depends(get_db)]):
+    return await crud_symptoms.get_symptoms(db)
 
 
-@router.put("", response_model=list[SymptomBase])
+@router.put("", response_model=list[SymptomOut])
 async def create_symptom(symptom: list[SymptomBase], db: Annotated[AsyncSession, Depends(get_db)]):
-    logger.info("Creqte symptoms %s", symptom)
+    logger.info("Create symptoms %s", symptom)
     return await crud_symptoms.create_symptom(db, symptom)
 
 
@@ -60,11 +61,6 @@ async def delete_symptom(symptom_id: int, db: Annotated[AsyncSession, Depends(ge
     await db.delete(symptom)
     await db.commit()
     return symptom
-
-
-@router.post("/batch", response_model=list[SymptomOut])
-async def create_symptoms_batch(batch: SymptomsBatchCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await crud_symptoms.create_symptoms_batch(db, batch)
 
 
 @router.delete("")
