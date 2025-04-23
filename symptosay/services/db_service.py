@@ -28,12 +28,12 @@ async def add_diseases(diseases: list[dict]):
     await connection.request_service(method="put", url=f"{DATABASE_SERVICE_URL}/api/diseases", data=diseases)
 
 
-async def get_diseases():
-    return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases")
+async def get_diseases(pagination: dict[str, int]):
+    return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases", data=pagination)
 
 
 async def get_disease_by_name(disease: str):
-    await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease}")
+    return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease}")
 
 
 async def del_symptoms(symptoms: list[dict]):
@@ -42,3 +42,17 @@ async def del_symptoms(symptoms: list[dict]):
 
 async def del_diseases(diseases: list[dict]):
     await connection.request_service(method="delete", url=f"{DATABASE_SERVICE_URL}/api/diseases", data=diseases)
+
+
+async def get_disease_symptoms(disease_id: int, pagination: dict[str, int]):
+    return await connection.request_service(
+        method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease_id}/symptoms", data=pagination
+    )
+
+
+async def add_user_symptom(symptom_id: int, user_id: int, disease_id: int):
+    await connection.request_service(
+        method="post",
+        url=f"{DATABASE_SERVICE_URL}/api/user-symptoms",
+        data={"symptom_id": symptom_id, "user_id": user_id, "disease_id": disease_id},
+    )

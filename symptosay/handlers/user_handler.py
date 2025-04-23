@@ -6,44 +6,88 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 from httpx import HTTPStatusError
 from keyboards.main_kb import build_pagination_db_kb
-from services.db_service import get_symptoms
+from services import db_service
 
 user_router = Router()
 PAGINATION_SIZE = 5
 
 
 class UserState(StatesGroup):
-    waiting_symptom_record = State()
-    waiting_disease_add = State()
+    waiting_symptom_choice = State()
+    waiting_disease_choice = State()
 
 
 @user_router.message(F.text.lower() == "записать симптом")
-async def add_user_symptom(message: Message, state: FSMContext):
+async def process_add_user_symptom(message: Message, state: FSMContext):
     try:
-        action = "add"
-        target = "symptom"
-        response = await get_symptoms({"size": PAGINATION_SIZE})
+        action = "choose"
+        target = "disease"
+        text = "Пожалуйста выберите болезнь"
+        response = await db_service.get_diseases({"size": PAGINATION_SIZE})
         await state.set_data({"action": action, "target": target})
         await message.answer(
-            "Пожалуйста ввыберите симптом", reply_markup=build_pagination_db_kb(response, action, target)
+            text=text,
+            reply_markup=build_pagination_db_kb(response, action, target),
         )
-        await state.set_state(UserState.waiting_symptom_record)
+        await state.set_state(UserState.waiting_disease_choice)
     except HTTPStatusError:
         await message.reply("Ошибка сервера, попробуйте позже")
 
 
-@user_router.message(UserState.waiting_symptom_record, lambda c: c.data.startwith("add_symptom_"))
+@user_router.callback_query(UserState.waiting_disease_choice, lambda c: c.data.startswith("choose_disease_"))
+async def record_user_disease_choice(callback: CallbackQuery, state: FSMContext):
+    disease_id = int(callback.data.split("_")[2])
+    action = "add"
+    target = "symptom"
+
+    response = await db_service.get_disease_symptoms(disease_id=disease_id, pagination={"size": PAGINATION_SIZE})
+
+    await state.set_data({"action": action, "target": target, "disease_id": disease_id})
+    await state.set_state(UserState.waiting_symptom_choice)
+    await callback.message.edit_text(
+        "Пожалуйста выберите симптом который хотите записать",
+        reply_markup=build_pagination_db_kb(
+            data=response,
+            action=action,
+            target=target,
+        ),
+    )
+
+
+@user_router.callback_query(UserState.waiting_symptom_choice, lambda c: c.data.startswith("add_symptom_"))
 async def record_user_symptom(callback: CallbackQuery, state: FSMContext, user_data: dict[str, Any]):
     symptom_id = int(callback.data.split("_")[2])
+    data = await state.get_data()
+    try:
+        await db_service.add_user_symptom(
+            symptom_id=symptom_id, user_id=user_data["user_id"], disease_id=data["disease_id"]
+        )
+        await callback.message.edit_text("Симптом успешно записан")
+        await state.clear()
+    except HTTPStatusError:
+        await callback.message.edit_text("Возникла ошибка, попробуйте позже")
+        await state.clear()
 
 
-@user_router.callback_query(UserState.waiting_symptom_record, lambda c: c.data.startswith("page_"))
-async def page_handler(callback: CallbackQuery, state: FSMContext):
+@user_router.callback_query(UserState.waiting_disease_choice, lambda c: c.data.startswith("page_"))
+async def disease_page_handler(callback: CallbackQuery, state: FSMContext):
+    if isinstance(callback, CallbackQuery):
+        page = int(callback.data.split("_")[1])
+        await state.update_data(page=page)
+        state_data = await state.get_data()
+        data = await db_service.get_diseases({"page": page, "size": PAGINATION_SIZE})
+
+        keyboard = build_pagination_db_kb(data=data, action=state_data["action"], target=state_data["target"])
+        await callback.message.edit_text(reply_markup=keyboard)
+
+
+@user_router.callback_query(UserState.waiting_symptom_choice, lambda c: c.data.startswith("page_"))
+async def symptom_page_handler(callback: CallbackQuery, state: FSMContext):
     page = int(callback.data.split("_")[1])
     await state.update_data(page=page)
     state_data = await state.get_data()
-    data = await get_symptoms({"page": page, "size": PAGINATION_SIZE})
+    data = await db_service.get_symptoms({"page": page, "size": PAGINATION_SIZE})
 
     keyboard = build_pagination_db_kb(data=data, action=state_data["action"], target=state_data["target"])
 
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    await callback.message.edit_text(reply_markup=keyboard)
