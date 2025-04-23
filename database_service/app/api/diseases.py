@@ -10,6 +10,7 @@ from app.crud import diseases as crud_diseases
 from app.database import get_db
 from app.models.diseases import Disease
 from app.schemas.diseases import DiseaseBase, DiseaseOut
+from app.schemas.symptoms import SymptomOut
 
 router = APIRouter()
 
@@ -68,7 +69,7 @@ async def add_symptom_to_disease(disease_id: int, symptom_id: int, db: Annotated
     return {"status": "ok"}
 
 
-@router.get("/{disease_id}/symptoms")
+@router.get("/{disease_id}/symptoms", response_model=Page[SymptomOut])
 async def get_disease_symptoms(disease_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_diseases.get_disease_symptoms(db, disease_id)
 
