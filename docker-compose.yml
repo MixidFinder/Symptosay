@@ -7,9 +7,7 @@ services:
       - app_network
 
   database_service:
-    build:
-      context: ./database_service
-      dockerfile: Dockerfile
+    build: ./database_service
     container_name: database_service
     env_file:
       - ./.env
@@ -17,7 +15,7 @@ services:
       database_service_db:
         condition: service_healthy
     volumes:
-      - ./database_service/alembic:/app/alembic
+      - ./database_service/alembic:/database_service/alembic
     ports:
       - "8001:8001"
     networks:
@@ -53,7 +51,7 @@ services:
       user_service_db:
         condition: service_healthy
     volumes:
-      - ./user_service/migrations:/app/migrations
+      - ./user_service/migrations:/user_service/migrations
     env_file:
       - ./.env
 
