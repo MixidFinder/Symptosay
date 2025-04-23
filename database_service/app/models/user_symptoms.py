@@ -1,5 +1,7 @@
-from sqlalchemy import Column, DateTime, Integer, ForeignKey, CheckConstraint
+from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Integer
+
 from app.database import Base
+
 
 class UserSymptom(Base):
     __tablename__ = "user_symptoms"
