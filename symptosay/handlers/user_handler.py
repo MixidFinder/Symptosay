@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from aiogram import F, Router
@@ -8,6 +9,8 @@ from httpx import HTTPStatusError
 from keyboards.main_kb import build_pagination_db_kb
 from keyboards.user_kb import user_profile_kb, user_records_markup
 from services import db_service
+
+logger = logging.getLogger(__name__)
 
 user_router = Router()
 PAGINATION_SIZE = 5
@@ -43,6 +46,7 @@ async def record_user_disease_choice(callback: CallbackQuery, state: FSMContext)
     target = "symptom"
 
     response = await db_service.get_disease_symptoms(disease_id=disease_id, pagination={"size": PAGINATION_SIZE})
+    logger.info("Get disease_symptoms: %s", response)
 
     await state.set_data({"action": action, "target": target, "disease_id": disease_id})
     await callback.message.edit_text(
@@ -88,7 +92,7 @@ async def symptom_page_handler(callback: CallbackQuery, state: FSMContext):
     page = int(callback.data.split("_")[1])
     await state.update_data(page=page)
     state_data = await state.get_data()
-    data = await db_service.get_symptoms({"page": page, "size": PAGINATION_SIZE})
+    data = await db_service.get_disease_symptoms(state_data["disease_id"], {"page": page, "size": PAGINATION_SIZE})
 
     keyboard = build_pagination_db_kb(data=data, action=state_data["action"], target=state_data["target"])
 
