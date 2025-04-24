@@ -35,6 +35,10 @@ async def get_diseases(db: AsyncSession):
     return await paginate(db, select(Disease))
 
 
+async def get_diseases_all(db: AsyncSession):
+    return await db.execute(select(Disease))
+
+
 async def add_symptom(db: AsyncSession, disease_id: int, symptom_id: int):
     stmt_d = select(Disease).where(Disease.id == disease_id)
     stmt_s = select(Symptom).where(Symptom.id == symptom_id)
@@ -56,3 +60,25 @@ async def get_disease_symptoms(db: AsyncSession, disease_id: int):
         .where(disease_symptom.c.disease_id == disease_id)
     )
     return await paginate(db, stmt)
+
+
+async def get_disease_symptoms_all(db: AsyncSession, disease_id: int):
+    stmt = (
+        select(Symptom)
+        .join(disease_symptom, Symptom.id == disease_symptom.c.symptom_id)
+        .where(disease_symptom.c.disease_id == disease_id)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+async def get_unlinked_symptoms(db: AsyncSession, disease_id: int):
+    request = (
+        select(Symptom)
+        .outerjoin(
+            disease_symptom, (Symptom.id == disease_symptom.c.symptom_id) & (disease_symptom.c.disease_id == disease_id)
+        )
+        .where(disease_symptom.c.symptom_id.is_(None))
+    )
+
+    return await paginate(db, request)

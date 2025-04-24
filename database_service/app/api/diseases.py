@@ -22,6 +22,12 @@ async def read_diseases(db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_diseases.get_diseases(db)
 
 
+@router.get("/all", response_model=list[DiseaseOut])
+async def read_diseases_all(db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await crud_diseases.get_diseases_all(db)
+    return result.scalars().all()
+
+
 @router.put("", response_model=list[DiseaseOut])
 async def create_disease(disease: list[DiseaseBase], db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_diseases.create_disease(db, disease)
@@ -72,6 +78,16 @@ async def add_symptom_to_disease(disease_id: int, symptom_id: int, db: Annotated
 @router.get("/{disease_id}/symptoms", response_model=Page[SymptomOut])
 async def get_disease_symptoms(disease_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     return await crud_diseases.get_disease_symptoms(db, disease_id)
+
+
+@router.get("/{disease_id}/symptoms/all", response_model=list[SymptomOut])
+async def get_disease_symptoms_all(disease_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
+    return await crud_diseases.get_disease_symptoms_all(db, disease_id)
+
+
+@router.get("/{disease_id}/symptoms/unlinked", response_model=Page[SymptomOut])
+async def get_unlinked_symptoms_for_disease(disease_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
+    return await crud_diseases.get_unlinked_symptoms(db, disease_id)
 
 
 @router.delete("")

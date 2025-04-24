@@ -34,6 +34,11 @@ async def get_symptoms(db: AsyncSession):
     return await paginate(db, select(Symptom))
 
 
+async def get_symptoms_all(db: AsyncSession):
+    result = await db.execute(select(Symptom))
+    return result.scalars().all()
+
+
 async def get_by_name(db: AsyncSession, name: str):
     stmt = select(Symptom).where(Symptom.name == name)
     result = await db.execute(stmt)
