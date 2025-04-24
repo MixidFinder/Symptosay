@@ -43,7 +43,6 @@ async def record_user_disease_choice(callback: CallbackQuery, state: FSMContext)
     response = await db_service.get_disease_symptoms(disease_id=disease_id, pagination={"size": PAGINATION_SIZE})
 
     await state.set_data({"action": action, "target": target, "disease_id": disease_id})
-    await state.set_state(UserState.waiting_symptom_choice)
     await callback.message.edit_text(
         "Пожалуйста выберите симптом который хотите записать",
         reply_markup=build_pagination_db_kb(
@@ -52,6 +51,7 @@ async def record_user_disease_choice(callback: CallbackQuery, state: FSMContext)
             target=target,
         ),
     )
+    await state.set_state(UserState.waiting_symptom_choice)
 
 
 @user_router.callback_query(UserState.waiting_symptom_choice, lambda c: c.data.startswith("add_symptom_"))
@@ -78,7 +78,7 @@ async def disease_page_handler(callback: CallbackQuery, state: FSMContext):
         data = await db_service.get_diseases({"page": page, "size": PAGINATION_SIZE})
 
         keyboard = build_pagination_db_kb(data=data, action=state_data["action"], target=state_data["target"])
-        await callback.message.edit_text(reply_markup=keyboard)
+        await callback.message.edit_reply_markup(reply_markup=keyboard)
 
 
 @user_router.callback_query(UserState.waiting_symptom_choice, lambda c: c.data.startswith("page_"))
@@ -90,4 +90,4 @@ async def symptom_page_handler(callback: CallbackQuery, state: FSMContext):
 
     keyboard = build_pagination_db_kb(data=data, action=state_data["action"], target=state_data["target"])
 
-    await callback.message.edit_text(reply_markup=keyboard)
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
