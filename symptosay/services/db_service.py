@@ -82,3 +82,9 @@ async def link_symptom(symptom_id: int, disease_id: int):
     await connection.request_service(
         method="post", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease_id}/symptoms/{symptom_id}"
     )
+
+
+async def get_user_records(user_id: int, pagination: dict[str, int]):
+    return await connection.request_service(
+        method="get", url=f"{DATABASE_SERVICE_URL}/api/user-symptoms/{user_id}", data=pagination
+    )

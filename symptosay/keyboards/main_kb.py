@@ -12,6 +12,7 @@ def get_main_kb(is_admin: bool = False) -> ReplyKeyboardMarkup:
     keyboard.add(KeyboardButton(text="Записать симптом"))
     keyboard.add(KeyboardButton(text="Удалить симптом"))
     keyboard.add(KeyboardButton(text="Обновить симптом"))
+    keyboard.row(KeyboardButton(text="Профиль"))
 
     if is_admin:
         keyboard.row(KeyboardButton(text="Админ панель"))
