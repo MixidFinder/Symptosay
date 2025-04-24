@@ -32,6 +32,14 @@ async def get_diseases(pagination: dict[str, int]):
     return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases", data=pagination)
 
 
+async def get_diseases_all():
+    return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/all")
+
+
+async def get_symptoms_all():
+    return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/symptoms/all")
+
+
 async def get_disease_by_name(disease: str):
     return await connection.request_service(method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease}")
 
@@ -50,9 +58,27 @@ async def get_disease_symptoms(disease_id: int, pagination: dict[str, int]):
     )
 
 
+async def get_disease_symptoms_all(disease_id: int):
+    return await connection.request_service(
+        method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease_id}/symptoms/all"
+    )
+
+
 async def add_user_symptom(symptom_id: int, user_id: int, disease_id: int):
     await connection.request_service(
         method="post",
         url=f"{DATABASE_SERVICE_URL}/api/user-symptoms",
         data={"symptom_id": symptom_id, "user_id": user_id, "disease_id": disease_id},
+    )
+
+
+async def get_unlinked_symptom(disease_id: int, pagination: dict[str, int]):
+    return await connection.request_service(
+        method="get", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease_id}/symptoms/unlinked", data=pagination
+    )
+
+
+async def link_symptom(symptom_id: int, disease_id: int):
+    await connection.request_service(
+        method="post", url=f"{DATABASE_SERVICE_URL}/api/diseases/{disease_id}/symptoms/{symptom_id}"
     )

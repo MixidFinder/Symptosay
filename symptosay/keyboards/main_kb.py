@@ -33,20 +33,31 @@ def get_inline_nav_kb():
     return keyboard.as_markup()
 
 
-def build_pagination_db_kb(data: dict[str, Any], action: str, target: str):
+def build_pagination_db_kb(data: dict[str, Any] | list, action: str, target: str):
     builder = InlineKeyboardBuilder()
     logger.debug("Get pagination data: %s, action: %s, target: %s", data, action, target)
 
-    for item in data["items"]:
-        builder.button(text=item["name"], callback_data=f"{action}_{target}_{item['id']}")
+    if isinstance(data, dict):
+        items = data.get("items", [])
+        page = data.get("page", 1)
+        size = data.get("size", len(items))
+        total = data.get("total", len(items))
+    elif isinstance(data, list):
+        items = data
+        page = 1
+        size = len(items)
+        total = len(items)
+
+    for item in items:
+        builder.button(text=item.get("name"), callback_data=f"{action}_{target}_{item.get('id')}")
 
     pagination_btns = []
 
-    if data["page"] > 1:
-        pagination_btns.append(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"page_{data['page'] - 1}"))
+    if page > 1:
+        pagination_btns.append(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"page_{page - 1}"))
 
-    if data["page"] * data["size"] < data["total"]:
-        pagination_btns.append(InlineKeyboardButton(text="Далее ➡️", callback_data=f"page_{data['page'] + 1}"))
+    if page * size < total:
+        pagination_btns.append(InlineKeyboardButton(text="Далее ➡️", callback_data=f"page_{page + 1}"))
 
     builder.adjust(1)
     if pagination_btns:

@@ -18,6 +18,7 @@ def get_db_management_keyboard():
     keyboard.button(text="Обновить болезнь", callback_data="update_diseases_adm")
     keyboard.button(text="Посмотреть все симптомы", callback_data="get_all_symptoms")
     keyboard.button(text="Посмотреть все болезни", callback_data="get_all_diseases")
+    keyboard.button(text="Привязать симптомы к болезни", callback_data="link_disease_symptom")
     keyboard.button(text="Назад", callback_data="admin_back")
     keyboard.button(text="Отмена", callback_data="admin_cancel")
     keyboard.adjust(2)
