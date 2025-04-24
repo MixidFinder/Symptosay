@@ -1,10 +1,12 @@
 import datetime
 
 from fastapi import HTTPException
-from sqlalchemy import and_, exists, select
+from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import and_, exists, join, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.diseases import disease_symptom
+from app.models.diseases import Disease, disease_symptom
+from app.models.symptoms import Symptom
 from app.models.user_symptoms import UserSymptom
 from app.schemas.user_symptoms import UserSymptomCreate, UserSymptomUpdate
 
@@ -33,10 +35,23 @@ async def record_user_symptom(db: AsyncSession, record: UserSymptomCreate):
     return new_record
 
 
-async def get_user_symptoms(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 100):
-    stmt = select(UserSymptom).where(UserSymptom.user_id == user_id).offset(skip).limit(limit)
-    result = await db.execute(stmt)
-    return result.scalars().all()
+async def get_user_symptoms(db: AsyncSession, user_id: int):
+    stmt = (
+        select(
+            UserSymptom.user_id,
+            UserSymptom.timestamp,
+            Symptom.name.label("symptom_name"),
+            Disease.name.label("disease_name"),
+        )
+        .select_from(
+            join(UserSymptom, Symptom, UserSymptom.symptom_id == Symptom.id).join(
+                Disease, UserSymptom.disease_id == Disease.id
+            )
+        )
+        .where(UserSymptom.user_id == user_id)
+        .order_by(UserSymptom.timestamp.desc())
+    )
+    return await paginate(db, stmt)
 
 
 async def update_user_symptom(db: AsyncSession, record_id: int, update: UserSymptomUpdate):

@@ -24,3 +24,10 @@ class UserSymptomOut(BaseModel):
 class UserSymptomUpdate(BaseModel):
     new_symptom_id: int
     new_disease_id: Optional[int] = None
+
+
+class UserSymptomOutStr(BaseModel):
+    user_id: int
+    symptom_name: str
+    disease_name: str
+    timestamp: datetime.datetime
