@@ -1,0 +1,85 @@
+services:
+  symptosay:
+    build: ./symptosay
+    container_name: symptosay
+    env_file: ./.env
+    networks:
+      - app_network
+
+  database_service:
+    build: ./database_service
+    container_name: database_service
+    env_file:
+      - ./.env
+    depends_on:
+      database_service_db:
+        condition: service_healthy
+    volumes:
+      - ./database_service/alembic:/database_service/alembic
+    ports:
+      - "8001:8001"
+    networks:
+      - app_network
+
+  database_service_db:
+    image: postgres:17-alpine3.20
+    container_name: database_service_db
+    environment:
+      POSTGRES_DB: database_service_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d database_service_db" ]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - database_service_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app_network
+
+  user_service:
+    build: ./user_service
+    container_name: user_service
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+    depends_on:
+      user_service_db:
+        condition: service_healthy
+    volumes:
+      - ./user_service/migrations:/user_service/migrations
+    env_file:
+      - ./.env
+
+  user_service_db:
+    image: postgres:17-alpine3.20
+    container_name: user_service_db
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d users" ]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - user_service_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  user_service_db:
+    driver: local
+  database_service_db:
+    driver: local
