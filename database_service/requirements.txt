@@ -20,7 +20,7 @@ greenlet==3.1.1
     # via
     #   database-service (pyproject.toml)
     #   sqlalchemy
-h11==0.14.0
+h11==0.16.0
     # via uvicorn
 idna==3.10
     # via anyio
